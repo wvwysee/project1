@@ -1,35 +1,62 @@
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
 from bs4 import BeautifulSoup
 
-def pars(url,target_word, max_arc=10):
-    url=""
-    response=requests.get(url)
-    if response.status_code==200:
+# Функция для выполнения парсинга по заданному слову и отправки результатов пользователю
+def search_articles(update: Update, context: CallbackContext):
+    # Получаем заданное слово из сообщения пользователя
+    word_to_search = context.args[0]
+
+    
+    url = "https://www.nbcnews.com/world"
+
+    
+    response = requests.get(url)
+    
+    
+    if response.status_code == 200:
         
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-
-
-
-    links=soup.get_all('a', href=True)
-    artic_match = 0
-
-    for link in links:
-        arcticle_url =link['href']
-
-        if link.text.strip() and arcticle_url != url:
-            arcticle_response = requests.get(arcticle_url)
-            if arcticle_response.status_code == 200:
-                article_soup = BeautifulSoup(arcticle_response.text, 'html.parser')
-                if target_word in article_soup.get_text():
-                        print(f"Статья: {link.text.strip()}")
-                        print(f"Ссылка: {arcticle_url}")
-                        print()
-                        artic_match += 1
-                        if artic_match >= max_arc:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        
+        links = soup.find_all('a', href=True)
+        
+        
+        articles_found = 0
+        
+      
+        for link in links:
+            article_url = link['href']
+            
+            if link.text.strip() and article_url != url:
+                article_response = requests.get(article_url)
+                if article_response.status_code == 200:
+                    article_soup = BeautifulSoup(article_response.text, 'html.parser')
+                  
+                    if word_to_search in article_soup.get_text():
+                        update.message.reply_text(f"Статья: {link.text.strip()}\nСсылка: {article_url}")
+                        articles_found += 1
+                      
+                        if articles_found >= 10:
                             break
     else:
-        # В случае ошибки выводим сообщение
-        print("Ошибка при выполнении запроса:", response.status_code)
+        
+        update.message.reply_text("Ошибка при выполнении запроса")
 
+def main():
+    
+    updater = Updater("6548496739:AAGrzcsKDKzqV-1uLRMUVvuLwLieoa5auv0")
+    dispatcher = updater.dispatcher
+    
+    
+    dispatcher.add_handler(CommandHandler("search", search_articles))
 
+    
+    updater.start_polling()
+    updater.idle()
+
+name=1
+
+if name == 'main': 
+    main()
