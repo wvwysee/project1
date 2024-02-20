@@ -14,12 +14,17 @@ def main(message):
     def main(message):
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('Допомога'))
-        bot.send_message(message.chat.id, '/start' '\n' '/getinfo' '\n' '/help' '\n' '/getnews')
+        bot.send_message(message.chat.id, '/start' '\n' '/getinfo' '\n' '/help' '\n' '/getsauce')
 
         @bot.message_handler(commands=['getinfo'])
         def main(message):
             bot.send_message(message.chat.id, 'a keyword is entered from the keyboard and the bot finds the 10 latest news on the Internet and responds with headlines and links')
 
+
+
+        @bot.message_handler(commands=['getsauce'])
+        def main(message):
+            
 
 bot.polling(none_stop=True)
 

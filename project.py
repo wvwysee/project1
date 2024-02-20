@@ -2,9 +2,31 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
 from bs4 import BeautifulSoup
+import telebot
+from telebot import types
+
+bot = telebot.TeleBot('6684976343:AAHQYaT3spQfdLZ9WKTqgB4a3d9mDHl-Z6Q')
 
 
-def search_articles(update: Update, context: CallbackContext):
+@bot.message_handler(commands=['start'])
+def main(message):
+    bot.send_message(message.chat.id, f'wassup bre its NEWSbro_bot, write some commands to get some sauce, u feel me? {message.from_user.first_name}')
+
+    @bot.message_handler(commands=['help'])
+    def main(message):
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton('Допомога'))
+        bot.send_message(message.chat.id, '/start' '\n' '/getinfo' '\n' '/help' '\n' '/getsauce')
+
+        @bot.message_handler(commands=['getinfo'])
+        def main(message):
+            bot.send_message(message.chat.id, 'a keyword is entered from the keyboard and the bot finds the 10 latest news on the Internet and responds with headlines and links')
+
+
+
+        @bot.message_handler(commands=['getsauce'])
+        def main (message,update: Update, context: CallbackContext):
+            
 
     word_to_search = context.args[0]
 
@@ -46,7 +68,7 @@ def search_articles(update: Update, context: CallbackContext):
 
 def main():
     
-    updater = Updater("6548496739:AAGrzcsKDKzqV-1uLRMUVvuLwLieoa5auv0")
+    updater = Updater("6684976343:AAHQYaT3spQfdLZ9WKTqgB4a3d9mDHl-Z6Q")
     dispatcher = updater.dispatcher
     
     
@@ -57,6 +79,6 @@ def main():
     updater.idle()
 
 
+bot.polling(none_stop=True)
 
-if __name__ == '__main__': 
-    main()
+
