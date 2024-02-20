@@ -3,9 +3,9 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
 from bs4 import BeautifulSoup
 
-# Функция для выполнения парсинга по заданному слову и отправки результатов пользователю
+
 def search_articles(update: Update, context: CallbackContext):
-    # Получаем заданное слово из сообщения пользователя
+
     word_to_search = context.args[0]
 
     
@@ -56,7 +56,7 @@ def main():
     updater.start_polling()
     updater.idle()
 
-name=1
 
-if name == 'main': 
+
+if __name__ == '__main__': 
     main()
