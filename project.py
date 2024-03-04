@@ -1,3 +1,4 @@
+import keyword
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
@@ -7,24 +8,11 @@ from telebot import types
 
 bot = telebot.TeleBot('6684976343:AAHQYaT3spQfdLZ9WKTqgB4a3d9mDHl-Z6Q')
 
+parsed_news = []
 
-@bot.message_handler(commands=['start'])
-def start_com(message):
-    bot.send_message(message.chat.id, f"wassup bre its NEWSbro_bot, write some commands to get some sauce, u feel me? {message.from_user.first_name}")
-
-    @bot.message_handler(commands=['help'])
-    def help_com(message):
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton('Допомога'))
-        bot.send_message(message.chat.id, '/start' '\n' '/getinfo' '\n' '/help' '\n' '/getsauce')
-
-        @bot.message_handler(commands=['getinfo'])
-        def getinfo_com(message):
-            bot.send_message(message.chat.id, 'a keyword is entered from the keyboard and the bot finds the 10 latest news on the Internet and responds with headlines and links')
-
-        @bot.message_handler(commands=['getsauce'])
-        def gets_com(keyword):
-         print("gotcha")
+def parser(keywordd):
+    global parsed_news
+    print("gotcha")
     url = 'https://www.nbcnews.com/world' 
     response = requests.get(url)
     
@@ -35,22 +23,24 @@ def start_com(message):
         relevant_news = []
         for article in news_articles:
             headline = article.find('h2').get_text()  
-            if keyword.lower() in headline.lower():  
+            if keywordd.lower() in headline.lower():  
                 link = article.find('a')['href']  
                 relevant_news.append((headline, link))
         
-        if relevant_news:
-            return relevant_news
-        else:
-            return [("По вашему запросу новостей не найдено.", "")]
-    else:
-        return [("Ошибка при получении страницы новостей.", "")]
-      
-     
-    for headline, link in news_with_links:
-        print(f"{headline}: {link}")
+        parsed_news = relevant_news
 
-# Пример вызова функции:
-keyword = input("Введите ключевое слово для поиска новостей: ")
-gets_com(keyword)
+@bot.message_handler(commands=['start'])
+def start(message):
+    global parsed_news
+    if len(message.text.split()) == 1:
+        bot.reply_to(message, "Please enter a keyword to search for news.")
+        
+    
+    keywordd = ' '.join(message.text.split()[1:])
+    parser(keywordd)
+    
+    if parsed_news:
+        for headline, link in parsed_news:
+            bot.reply_to(message, f"{headline}: {link}")
+
 bot.polling(none_stop=True)
