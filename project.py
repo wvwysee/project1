@@ -1,46 +1,64 @@
-import keyword
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
 import requests
-from bs4 import BeautifulSoup
+import json
 import telebot
-from telebot import types
+import time
 
 bot = telebot.TeleBot('6684976343:AAHQYaT3spQfdLZ9WKTqgB4a3d9mDHl-Z6Q')
 
-parsed_news = []
-
-def parser(keywordd):
-    global parsed_news
-    print("gotcha")
-    url = 'https://www.nbcnews.com/world' 
-    response = requests.get(url)
-    
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        news_articles = soup.find_all('article')  
-        
-        relevant_news = []
-        for article in news_articles:
-            headline = article.find('h2').get_text()  
-            if keywordd.lower() in headline.lower():  
-                link = article.find('a')['href']  
-                relevant_news.append((headline, link))
-        
-        parsed_news = relevant_news
-
 @bot.message_handler(commands=['start'])
 def start(message):
-    global parsed_news
     if len(message.text.split()) == 1:
         bot.reply_to(message, "Please enter a keyword to search for news.")
-        
-    
-    keywordd = ' '.join(message.text.split()[1:])
-    parser(keywordd)
-    
-    if parsed_news:
-        for headline, link in parsed_news:
-            bot.reply_to(message, f"{headline}: {link}")
+        time.sleep(10)
 
-bot.polling(none_stop=True)
+    keyword = input("fsfs:  ")
+    api_key = 'L64425K9qx3YSBP9gho7fpSj1ur3ENSI'
+    news_data = get_news(keyword, api_key)
+
+    if news_data:
+        for i in range(min(10, len(news_data['titles']))):
+            headline = news_data['titles'][i]
+            link = news_data['links'][i]
+            bot.reply_to(message, f"{headline}: {link}")
+    
+       
+        filename = f"{keyword}_news.json"
+        with open(filename, 'w') as f:
+            json.dump(news_data, f, indent="2")
+
+        
+        with open(filename, 'rb') as f:
+            bot.send_document(message.chat.id, f)
+
+    else:
+        bot.reply_to(message, "No news found for the given keyword.")
+
+def get_news(keyword, api_key):
+    api_url = f"https://api.nytimes.com/svc/search/v2/articlesearch.json?q={keyword}&api-key={api_key}"
+    try:
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            data = response.json()
+            articles = data['response']['docs']
+            
+            titles = []
+            links = []
+            times = []
+            for article in articles:
+                titles.append(article['headline']['main'])
+                links.append(article['web_url'])
+                times.append(article['pub_date'])
+           
+            news_data = {
+                'titles': titles,
+                'links': links,
+                'times': times
+            }
+            return news_data
+        else:
+            return None
+    except Exception as e:
+        print("Error:", e)
+        return None
+
+bot.polling(none_stop=True) 
